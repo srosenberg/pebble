@@ -8,6 +8,9 @@ import (
 	"log"
 	"os"
 	"time"
+	"fmt"
+	 "unsafe"
+	"math/bits"
 
 	"github.com/cockroachdb/pebble/internal/testkeys"
 	"github.com/cockroachdb/pebble/tool"
@@ -25,8 +28,47 @@ var (
 	wipe            bool
 )
 
+type Slice struct {
+	Data unsafe.Pointer
+	Len  int
+	Cap  int
+}
+
+func coverage() []byte {
+	addr := unsafe.Pointer(&counters)
+	size := uintptr(unsafe.Pointer(&ecounters)) - uintptr(addr)
+
+	var res []byte
+	*(*Slice)(unsafe.Pointer(&res)) = Slice{
+		Data: addr,
+		Len:  int(size),
+		Cap:  int(size),
+	}
+	return res
+}
+
+func countBits(cov []byte) int {
+	n := 0
+	for _, c := range cov {
+		n += bits.OnesCount8(c)
+	}
+	return n
+}
+
+//linkname coverage internal/fuzz.coverage 
+//func coverage() []byte
+
+//go:linkname counters internal/fuzz._counters
+var counters [0]byte
+
+//go:linkname ecounters internal/fuzz._ecounters
+var ecounters [0]byte
+
+
 func main() {
 	log.SetFlags(0)
+
+	fmt.Printf("Coverage: %d\n", countBits(coverage()))
 
 	cobra.EnableCommandSorting = false
 

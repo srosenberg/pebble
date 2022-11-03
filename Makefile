@@ -41,10 +41,11 @@ stressmeta: stress
 .PHONY: crossversion-meta
 crossversion-meta:
 	git checkout ${LATEST_RELEASE}; \
-		${GO} test -c ./internal/metamorphic -o './internal/metamorphic/crossversion/${LATEST_RELEASE}.test'; \
+		${GO} test -c -fuzz=. ./internal/metamorphic -o './internal/metamorphic/crossversion/${LATEST_RELEASE}.test'; \
 		git checkout -; \
-		${GO} test -c ./internal/metamorphic -o './internal/metamorphic/crossversion/head.test'; \
-		${GO} test -tags '$(TAGS)' ${testflags} -v -run 'TestMetaCrossVersion' ./internal/metamorphic/crossversion --version '${LATEST_RELEASE},${LATEST_RELEASE},${LATEST_RELEASE}.test' --version 'HEAD,HEAD,./head.test'
+		${GO} test -c -fuzz=. ./internal/metamorphic -o './internal/metamorphic/crossversion/head.test'; \
+		# {GO} test -fuzz=. -tags '$(TAGS)' ${testflags} -v -run 'TestMetaCrossVersion' ./internal/metamorphic/crossversion --version '${LATEST_RELEASE},${LATEST_RELEASE},${LATEST_RELEASE}.test' --version 'HEAD,HEAD,./head.test' --factor 10
+		${GO} test -coverprofile cover.out -tags '$(TAGS)' ${testflags} -v -run 'TestMetaCrossVersion' ./internal/metamorphic/crossversion --version '${LATEST_RELEASE},${LATEST_RELEASE},${LATEST_RELEASE}.test' --version 'HEAD,HEAD,./head.test' --factor 10
 
 .PHONY: generate
 generate:

@@ -66,6 +66,9 @@ func reproductionCommand() string {
 
 // TestMetaCrossVersion performs cross-version metamorphic testing.
 func TestMetaCrossVersion(t *testing.T) {
+	t.Logf("Number of Edges: %d", metamorphic.NumEdges())
+        t.Logf(metamorphic.BitCoverage())
+	t.Logf(metamorphic.EdgeCoverage())
 	if seed == 0 {
 		seed = time.Now().UnixNano()
 	}
@@ -89,6 +92,8 @@ func TestMetaCrossVersion(t *testing.T) {
 	// failure locally easier.
 	ctx := context.Background()
 	require.NoError(t, runCrossVersion(ctx, t, versions, seed, factor))
+	t.Logf(metamorphic.BitCoverage())
+        t.Logf(metamorphic.EdgeCoverage())
 }
 
 type pebbleVersion struct {
@@ -159,6 +164,8 @@ func runCrossVersion(
 			err := r.run(ctx, &buf)
 			if err != nil {
 				t.Fatalf("Metamorphic test failed: %s\nOutput:%s\n", err, buf.String())
+			} else {
+				t.Logf("Metamorphic test output: %s\n", buf.String())
 			}
 
 			// dir is a directory containing the ops file and subdirectories for
@@ -223,6 +230,7 @@ type metamorphicTestRun struct {
 func (r *metamorphicTestRun) run(ctx context.Context, output io.Writer) error {
 	args := []string{
 		"-test.run", "TestMeta$",
+		"-test.v",
 		"-seed", strconv.FormatUint(r.seed, 10),
 		"-keep",
 	}

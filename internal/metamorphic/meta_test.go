@@ -294,6 +294,8 @@ func hashThread(objID objID, numThreads int) int {
 // failure, otherwise changes to the metamorphic tests may cause the generated
 // operations and options to differ.
 func TestMeta(t *testing.T) {
+	t.Logf(BitCoverage())
+	t.Logf(EdgeCoverage())
 	if *compare != "" {
 		testCompareRun(t, *compare)
 		return
@@ -487,6 +489,9 @@ func TestMeta(t *testing.T) {
 			os.Exit(1)
 		}
 	}
+	t.Logf(BitCoverage())
+        t.Logf(EdgeCoverage())
+	t.Logf(EdgeCoverageVerbose())
 }
 
 func readFile(path string) string {
